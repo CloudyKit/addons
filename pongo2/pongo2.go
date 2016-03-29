@@ -1,7 +1,7 @@
 package pongo2
 
 import (
-	"github.com/CloudyKit/framework/di"
+	"github.com/CloudyKit/framework/context"
 	. "github.com/CloudyKit/framework/view"
 	"gopkg.in/flosch/pongo2.v3"
 	"io"
@@ -17,7 +17,7 @@ func NewPlugin(baseDir string, extensions ...string) *pongo2plugin {
 	return &pongo2plugin{loader: newPongo2Loader(baseDir), extensions: extensions}
 }
 
-func (plugin *pongo2plugin) Init(di *di.Context) {
+func (plugin *pongo2plugin) Init(di *context.Context) {
 	plugin.Manager.AddLoader(plugin.loader, plugin.extensions...)
 }
 
