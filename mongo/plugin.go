@@ -33,12 +33,12 @@ func (m *magicSession) Finalize() {
 
 func (pp *plugin) Init(c *context.Context) {
 	if pp.master == nil {
-		c.MapType(pp.master, func(c *context.Context) interface{} {
+		c.MapType(pp.master, func(cc *context.Context) interface{} {
 			sess, err := mgo.Dial(pp.url)
 			if err != nil {
 				panic(err)
 			}
-			c.MapType(sess, (*magicSession)(sess))
+			cc.MapType(sess, (*magicSession)(sess))
 			return sess
 		})
 	} else {
