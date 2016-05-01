@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/CloudyKit/framework/context"
 	"gopkg.in/mgo.v2"
-	"reflect"
 	"gopkg.in/mgo.v2/bson"
+	"reflect"
 )
 
 type ID struct {

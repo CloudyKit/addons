@@ -31,7 +31,7 @@ func (m *magicSession) Finalize() {
 	(*mgo.Session)(m).Close()
 }
 
-func (pp *plugin) Init(c *context.Context) {
+func (pp *plugin) PluginInit(c *context.Context) {
 	if pp.master == nil {
 		c.MapType(pp.master, func(cc *context.Context) interface{} {
 			sess, err := mgo.Dial(pp.url)
