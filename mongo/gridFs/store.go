@@ -2,7 +2,7 @@
 package gridFs
 
 import (
-	"github.com/CloudyKit/framework/context"
+	"github.com/CloudyKit/framework/cdi"
 	"github.com/CloudyKit/framework/session"
 	"github.com/jhsx/qm"
 	"gopkg.in/mgo.v2"
@@ -35,28 +35,28 @@ func (sessionStore *Store) gridFs(session *mgo.Session, name string, create bool
 	return gridFile, err
 }
 
-func mysession(c *context.Context) (sess *mgo.Session) {
+func mysession(c *cdi.DI) (sess *mgo.Session) {
 	sess = c.Get(sess).(*mgo.Session)
 	return
 }
 
-func (sessionStore *Store) Writer(c *context.Context, name string) (writer io.WriteCloser, err error) {
+func (sessionStore *Store) Writer(c *cdi.DI, name string) (writer io.WriteCloser, err error) {
 	writer, err = sessionStore.gridFs(mysession(c), name, true)
 	return
 }
 
-func (sessionStore *Store) Reader(c *context.Context, name string) (reader io.ReadCloser, err error) {
+func (sessionStore *Store) Reader(c *cdi.DI, name string) (reader io.ReadCloser, err error) {
 	reader, err = sessionStore.gridFs(mysession(c), name, false)
 	return
 }
 
-func (sessionStore *Store) Remove(c *context.Context, name string) (err error) {
+func (sessionStore *Store) Remove(c *cdi.DI, name string) (err error) {
 	sess := mysession(c)
 	defer sess.Close()
 	return sess.DB(sessionStore.db).GridFS(sessionStore.prefix).Remove(name)
 }
 
-func (sessionStore *Store) Gc(c *context.Context, before time.Time) {
+func (sessionStore *Store) Gc(c *cdi.DI, before time.Time) {
 	sess := mysession(c)
 	gridFs := sess.DB(sessionStore.db).GridFS(sessionStore.prefix)
 

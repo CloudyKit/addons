@@ -2,28 +2,36 @@ package mongo
 
 import (
 	"github.com/CloudyKit/framework/app"
-	"github.com/CloudyKit/framework/context"
+	"github.com/CloudyKit/framework/cdi"
 	"gopkg.in/mgo.v2"
+	"reflect"
 )
 
-type plugin struct {
-	url, db string
-	master  *mgo.Session
-	useCopy bool
+var SessionType = reflect.TypeOf((*mgo.Session)(nil))
+var DatabaseType = reflect.TypeOf((*mgo.Database)(nil))
+var CollectionType = reflect.TypeOf((*mgo.Collection)(nil))
+
+func GetSession(cdi *cdi.DI) *mgo.Session {
+	return cdi.Val4Type(SessionType).(*mgo.Session)
 }
 
-func NewPlugin(url, db string) app.Plugin {
-	return &plugin{url: url, db: db}
+func GetDatabase(cdi *cdi.DI) *mgo.Database {
+	return cdi.Val4Type(DatabaseType).(*mgo.Database)
 }
 
-func NewPluginMasterSession(url, db string, useCopy bool) app.Plugin {
-	master, _ := mgo.Dial(url)
-	return &plugin{db: db, master: master, useCopy: useCopy}
+func GetCollection(cdi *cdi.DI) *mgo.Collection {
+	return cdi.Val4Type(CollectionType).(*mgo.Collection)
+}
+
+type Boot struct {
+	URL, DB      string
+	Session      *mgo.Session
+	Copy, Master bool
 }
 
 type magicSession mgo.Session
 
-func (m *magicSession) Provide(di *context.Context) interface{} {
+func (m *magicSession) Provide(di *cdi.DI) interface{} {
 	return (*mgo.Session)(m)
 }
 
@@ -31,34 +39,43 @@ func (m *magicSession) Finalize() {
 	(*mgo.Session)(m).Close()
 }
 
-func (pp *plugin) PluginInit(c *context.Context) {
-	if pp.master == nil {
-		c.MapType(pp.master, func(cc *context.Context) interface{} {
-			sess, err := mgo.Dial(pp.url)
+func (pp *Boot) Bootstrap(a *app.App) {
+
+	if pp.Master {
+
+		if pp.Session == nil {
+			var err error
+			pp.Session, err = mgo.Dial(pp.URL)
 			if err != nil {
 				panic(err)
 			}
-			cc.MapType(sess, (*magicSession)(sess))
-			return sess
-		})
-	} else {
-		c.Map(pp.master)
-		if pp.useCopy {
-			c.MapType(pp.master, func(c *context.Context) interface{} {
-				sess := pp.master.Copy()
-				c.MapType(sess, (*magicSession)(sess))
-				return sess
+		}
+
+		if pp.Copy {
+			a.Global.MapType(SessionType, func(cdi *cdi.DI) interface{} {
+				s := pp.Session.Copy()
+				cdi.MapType(SessionType, (*magicSession)(s))
+				return s
 			})
 		} else {
-			c.MapType(pp.master, func(c *context.Context) interface{} {
-				sess := pp.master.Clone()
-				c.MapType(sess, (*magicSession)(sess))
-				return sess
+			a.Global.MapType(SessionType, func(cdi *cdi.DI) interface{} {
+				s := pp.Session.Clone()
+				cdi.MapType(SessionType, (*magicSession)(s))
+				return s
 			})
 		}
+	} else {
+		a.Global.MapType(SessionType, func(cdi *cdi.DI) interface{} {
+			s, err := mgo.Dial(pp.URL)
+			if err != nil {
+				panic(err)
+			}
+			cdi.MapType(SessionType, (*magicSession)(s))
+			return s
+		})
 	}
 
-	c.MapType((*mgo.Database)(nil), func(c *context.Context) interface{} {
-		return c.Get(pp.master).(*mgo.Session).DB(pp.db)
+	a.Global.MapType(DatabaseType, func(cdi *cdi.DI) interface{} {
+		return GetSession(cdi).DB(pp.DB)
 	})
 }

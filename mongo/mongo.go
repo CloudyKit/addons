@@ -2,8 +2,7 @@ package mongo
 
 import (
 	"fmt"
-	"github.com/CloudyKit/framework/context"
-	"gopkg.in/mgo.v2"
+	"github.com/CloudyKit/framework/cdi"
 	"gopkg.in/mgo.v2/bson"
 	"reflect"
 )
@@ -28,20 +27,24 @@ type IEntity interface {
 	Id()
 }
 
-func AddEntityManager(c *context.Context, structtyp interface{}, name string) error {
+func AddEntityManager(c *cdi.DI, zeroval interface{}, name string) error {
 
-	typeOf := reflect.TypeOf(structtyp)
+	typeOf, ok := zeroval.(reflect.Type)
+
+	if !ok {
+		typeOf = reflect.TypeOf(zeroval)
+	}
 
 	if typeOf.Kind() != reflect.Struct {
 		panic(fmt.Errorf("Type %q is not struct kind", typeOf))
 	}
 
-	c.MapType(structtyp, func(c *context.Context, v reflect.Value) {
-		db := c.Get((*mgo.Database)(nil)).(*mgo.Database)
-		c = c.Child()
-		defer c.Done()
-		c.Map(db.C(name))
-		c.InjectStructValue(v)
+	c.MapType(typeOf, func(c *cdi.DI, v reflect.Value) {
+		db := GetDatabase(c)
+		collection := c.Val4Type(CollectionType) // backups previous collection
+		c.MapType(CollectionType, db.C(name))    // map new collection
+		c.InjectInStructValue(v)                 // injects new collection into the value
+		c.MapType(CollectionType, collection)    // restore backuped collection
 	})
 
 	return nil
