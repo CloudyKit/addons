@@ -26,6 +26,7 @@ func GetCollection(cdi *cdi.Global) *mgo.Collection {
 
 type Component struct {
 	URL, DB      string
+	DialInfo     *mgo.DialInfo
 	Session      *mgo.Session
 	Copy, Master bool
 }
@@ -40,13 +41,20 @@ func (m *magicSession) Finalize() {
 	(*mgo.Session)(m).Close()
 }
 
+func (pp *Component) session() (*mgo.Session, error) {
+	if pp.DialInfo != nil {
+		return mgo.DialWithInfo(pp.DialInfo)
+	}
+	return mgo.Dial(pp.URL)
+}
+
 func (pp *Component) Bootstrap(a *app.App) {
 
 	if pp.Master {
 
 		if pp.Session == nil {
 			var err error
-			pp.Session, err = mgo.Dial(pp.URL)
+			pp.Session, err = pp.session()
 			if err != nil {
 				panic(err)
 			}
@@ -65,9 +73,10 @@ func (pp *Component) Bootstrap(a *app.App) {
 				return s
 			})
 		}
+
 	} else {
 		a.Global.MapType(SessionType, func(cdi *cdi.Global) interface{} {
-			s, err := mgo.Dial(pp.URL)
+			s, err := pp.session()
 			if err != nil {
 				panic(err)
 			}
