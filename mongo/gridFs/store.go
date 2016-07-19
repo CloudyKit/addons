@@ -41,7 +41,7 @@ func (sessionStore *Store) Writer(c *cdi.Global, name string) (writer io.WriteCl
 	return
 }
 
-func (sessionStore *Store) Reader(c *cdi.Global, name string) (reader io.ReadCloser, err error) {
+func (sessionStore *Store) Reader(c *cdi.Global, name string, t time.Time) (reader io.ReadCloser, err error) {
 	reader, err = sessionStore.gridFs(mongo.GetSession(c), name, false)
 	return
 }
@@ -52,7 +52,7 @@ func (sessionStore *Store) Remove(c *cdi.Global, name string) (err error) {
 	return sess.DB(sessionStore.db).GridFS(sessionStore.prefix).Remove(name)
 }
 
-func (sessionStore *Store) Gc(c *cdi.Global, before time.Time) {
+func (sessionStore *Store) GC(c *cdi.Global, before time.Time) {
 	sess := mongo.GetSession(c)
 	gridFs := sess.DB(sessionStore.db).GridFS(sessionStore.prefix)
 

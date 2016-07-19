@@ -1,0 +1,21 @@
+{{ extends "startmin/document" }}
+
+{{ block Content() }}
+    {{ yield smPageSection("Create Product") content}}
+        {{ yield smForm(smStyle="horizontal") content}}
+
+            {{ yield smFormGroupHz(label="Name",id="product-name") content}}
+                {{ yield smSimpleInput(id="product-name") }}
+            {{ end }}
+
+            {{ yield smFormGroupHz(label="SKU",id="product-sku") content}}
+                {{ yield smSimpleInput(id="product-sku") }}
+            {{ end }}
+
+            {{ yield smFormGroup(label="SKU",id="product-skn") content}}
+                {{ yield smSimpleInput(id="product-skn") }}
+            {{ end }}
+
+        {{ end }}
+    {{ end }}
+{{ end }}

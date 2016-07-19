@@ -1,0 +1,48 @@
+{{ block smSideBarNavItem() }}
+    <li>
+        <a href="{{.Href?.Href:"javascript:void(0)" }}">
+            <i class="fa fa-{{ .Icon?.Icon:"circle" }} fa-fw"></i>
+            {{ .Text }} {{ if .Children }} <span class="fa arrow"></span>{{ end }} </a>
+
+        {{ if .Children }}
+            <ul class="nav nav-second-level">
+                {{ range .Children }}{{ yield smSideBarNavItemSecond() . }}{{ end }}
+            </ul>
+        {{ end }}
+    </li>
+{{ end }}
+
+{{ block smSideBarNavItemSecond() }}
+    <li>
+        <a href="{{.Href?.Href:"javascript:void(0)" }}">
+            <i class="fa fa-{{ .Icon?.Icon:"circle" }} fa-fw"></i>
+            {{ .Text }} {{ if .Children }} <span class="fa arrow"></span>{{ end }} </a>
+
+        {{ if .Children }}
+            <ul class="nav nav-third-level">
+                {{ range .Children }}{{ yield smSideBarNavItemSecond() . }}{{ end }}
+            </ul>
+        {{ end }}
+    </li>
+{{ end }}
+
+{{ block smSideBarNav(class,id) }}
+    <!-- Sidebar -->
+    <div class="navbar-default sidebar" role="navigation">
+        <div class="sidebar-nav navbar-collapse">
+            <ul class="nav" id="side-menu">
+                <li class="sidebar-search">
+                   <div class="input-group custom-search-form">
+                        <input type="text" class="form-control" placeholder="Search...">
+                            <span class="input-group-btn">
+                                <button class="btn btn-primary" type="button">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                   </div>
+                </li>
+               {{ range .Children }}{{ yield smSideBarNavItem() .}}{{ end }}
+            </ul>
+        </div>
+    </div>
+{{ end }}

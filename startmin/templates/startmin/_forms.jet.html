@@ -1,0 +1,29 @@
+
+
+{{ block smForm(class="",method="",action="",smStyle="horizontal") }}
+<form class="form-{{smStyle}} {{class}}" method="{{ method }}" action="{{ action }}">
+    {{ yield content }}
+</form>
+{{ end }}
+
+{{ block smSimpleInput(type="text",name="",value="",id=false,placeholder="",autofocus=false) }}
+    <input class="form-control" type="{{ type }}" value="{{ value }}" name="{{ name }}" id="{{ id?id:"smForm-"+name }}" placeholder="{{ placeholder }}" {{ if autofocus }}autofocus{{ end }} />
+{{ end }}
+
+{{ block smFormGroupHz(id,label,sizeLabel="3",sizeField="9",err) }}
+<div class="form-group">
+    <label for="{{ id?id:"" }}" class="col-md-{{ sizeLabel }} control-label">{{ label }}</label>
+    <div class="col-md-{{ sizeField }}">
+        {{ yield content }}
+    </div>
+</div>
+{{ end }}
+
+{{ block smFormGroup(id,label,err) }}
+<div class="form-group">
+    <label for="{{ id?id:"" }}"> {{ label }}</label>
+    <div>
+        {{ yield content }}
+    </div>
+</div>
+{{ end }}

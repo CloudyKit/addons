@@ -1,0 +1,12 @@
+{{ block smLinkBtn(label,btnStyle="primary",class,type,click,id,href) }}
+   <a {{ if href }}href="{{ href }}"{{ end }}
+   class="btn btn-{{btnStyle}} {{ if class }}{{ class }}{{ end }}"
+   {{ if id }} id="{{id}}"{{ end }}
+   {{ if type }}type="{{type}}"{{ end }}
+   {{ if click }}onclick="{{click}}"{{ end }}>{{label}}</a>
+{{ end }}
+
+
+{{ block smBtn(label=false,btnStyle="primary",class=false,type=false,click=false,id=false) }}
+    <button class="btn btn-{{btnStyle}} {{ if class }}{{ class }}{{ end }}" {{ if id }} id="{{id}}" {{ end }} {{ if type }}type="{{type}}" {{ end }}{{ if click }}onclick="{{click}}" {{ end }}>{{label}}</button>
+{{ end }}
