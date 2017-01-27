@@ -11,28 +11,28 @@ func main() {
 	app.Default.Bootstrap(startmin.Component(""))
 	view.DefaultSet.SetDevelopmentMode(true)
 
-	menu := startmin.MenuBar{}
+	menu := startmin.MenuItem{}
 
-	menu.AddMenu(&startmin.MenuItem{
-		Name: "dashboard",
+	menu.AppendMenu(&startmin.MenuItem{
+		Key:  "dashboard",
 		Text: "Dashboard",
 		Icon: "dashboard",
 	})
 
-	menu.Get("catalog", "Catalog", "opencart").AddMenuList(
+	menu.Get("catalog", "Catalog", "opencart").AppendMenus(
 		[]*startmin.MenuItem{
 			{
-				Name: "categories",
+				Key:  "categories",
 				Text: "Categories",
 				Children: []*startmin.MenuItem{
 					{
-						Name: "new-category",
+						Key:  "new-category",
 						Text: "New Category",
 					},
 				},
 			},
 			{
-				Name: "new-product",
+				Key:  "new-product",
 				Text: "New Product",
 				Icon: "product-hunt",
 			},
@@ -42,7 +42,7 @@ func main() {
 	view.DefaultSet.AddGlobal("menu", menu)
 
 	app.Default.AddHandlerFunc("GET", "/", func(c *request.Context) {
-		view.Render(c.Global, "document", nil)
+		view.Render(c.IoC, "document", nil)
 	})
 	app.Default.RunServer(app.Env(":8082", "PORT"))
 }

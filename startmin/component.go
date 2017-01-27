@@ -13,7 +13,7 @@ import (
 
 type MenuItem struct {
 	Icon     string
-	Name     string
+	Key      string
 	Text     string
 	Href     string
 	Children []*MenuItem
@@ -23,21 +23,29 @@ func (m *MenuItem) Get(name, text, icon string) *MenuItem {
 
 	for i := 0; i < len(m.Children); i++ {
 		m := m.Children[i]
-		if m.Name == name {
+		if m.Key == name {
 			return m
 		}
 	}
 
-	me := &MenuItem{Name: name, Text: text, Icon: icon}
-	m.Children = append(m.Children, me)
-	return me
+	if text != "" {
+		me := &MenuItem{Key: name, Text: text, Icon: icon}
+		m.Children = append(m.Children, me)
+		return me
+	}
+
+	return nil
 }
 
-func (m *MenuItem) AddMenu(menu ...*MenuItem) {
-	m.AddMenuList(menu)
+func (m *MenuItem) GetByKey(key string) *MenuItem {
+	return m.Get(key, "", "")
 }
 
-func (m *MenuItem) AddMenuList(menu []*MenuItem) {
+func (m *MenuItem) AppendMenu(menu ...*MenuItem) {
+	m.AppendMenus(menu)
+}
+
+func (m *MenuItem) AppendMenus(menu []*MenuItem) {
 	m.Children = append(m.Children, menu...)
 }
 
@@ -55,7 +63,7 @@ func Component(publicPath string) app.ComponentFunc {
 			}
 		}
 
-		jetSet := view.GetJetSet(a.Global)
+		jetSet := view.GetJetSet(a.IoC)
 		jetSet.AddGlobal("startminPublicPath", a.Prefix+publicPath)
 		jetSet.AddGopathPath("github.com/CloudyKit/addons/startmin/templates")
 

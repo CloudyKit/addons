@@ -1,0 +1,96 @@
+{{ import "startmin/buttons" }}
+{{ import "startmin/sidebar" }}
+{{ import "startmin/forms" }}
+
+{{ block smPageHeader(header) }}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">{{ if header }}{{header}}{{else}}{{ yield content }}{{ end }}</h1>
+        </div>
+    </div>
+{{ end }}
+
+{{ block row(class,id) }}
+    <div {{ if id }}id="{{ id }}"{{ end }} class="row {{ if class }}{{ class }}{{ end }}">{{ yield content }}</div>
+{{ end }}
+
+{{ block col(md=12,lg,xs,sm,class,id) }}
+    <div {{ if id }}id="{{ id }}"{{ end }} class="col-md-{{ md }}{{ if lg }} col-lg-{{ lg }}{{ end }}{{ if xs }} col-xs-{{ xs }}{{ end }}{{ if sm }} col-sm-{{ sm }}{{ end }}{{ if class }}{{ class }}{{ end }}">
+        {{ yield content }}
+    </div>
+{{ end }}
+
+{{ block smPanelHeading() }}
+    <div class="panel-heading">{{ yield content }}</div>
+{{ end }}
+
+{{ block smPanelBody() }}
+    <div class="panel-body">{{ yield content }}</div>
+{{ end }}
+
+{{ block smPanelFooter() }}
+    <div class="panel-footer">{{ yield content }}</div>
+{{ end }}
+
+{{ block smPanel(header,smStyle="default") }}
+    <div class="panel panel-{{ smStyle }}">
+        {{ if header }}
+            <div class="panel-heading">{{ header }}</div>
+        {{ end }}
+        {{ yield content }}
+    </div>
+{{ end }}
+
+{{ block smNavBarHeader(link=false) }}
+    <div class="navbar-header">
+        <a class="navbar-brand" href="{{ link?link:"" }}">{{ yield content }}</a>
+    </div>
+{{ end }}
+
+{{ block smNavBarMenu(position="left") . }}
+<!-- Top Navigation: Left Menu -->
+<ul class="nav navbar-nav navbar-{{ position }} navbar-top-links">
+    {{ if isset(.Children) }}
+        {{ range .Children }}
+             <li class="{{ .Children?"dropdown ":"" }}navbar-inverse">
+                    <a href="{{.Href?.Href:"javascript:void(0)" }}" {{ if .Children }} data-toggle="dropdown" class="dropdown-toggle" {{ end }}>
+                        <i class="fa fa-{{ .Icon?.Icon:"circle" }} fa-fw"></i>
+                        {{ .Text }}
+                        {{ if .Children }}
+                            <b class="caret"></b>
+                        {{ end }}
+                    </a>
+
+                    {{ if .Children }}
+                        <ul class="dropdown-menu">
+                            {{ range .Children }}
+                            <li>
+                                <a href="{{.Href?.Href:"javascript:void(0)" }}">
+                                    <i class="fa fa-{{ .Icon?.Icon:"circle" }} fa-fw"></i> {{ .Text }}
+                                </a>
+                            </li>
+                            {{ end }}
+                        </ul>
+                    {{ end }}
+            </li>
+        {{ end }}
+    {{ else }}
+        {{ yield content }}
+    {{ end }}
+</ul>
+{{ end }}
+
+{{ block smNavBar(id=false,class=false,sideBar=false) }}
+<!-- Navigation -->
+    <nav {{ if id }}id="{{ id }}"{{ end }} class="navbar navbar-inverse navbar-fixed-top {{ if class }} {{ class }}{{ end }}" role="navigation">
+    {{ if sideBar }}
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="{{ sideBar }}">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+    {{ end }}
+    {{ yield content }}
+    </nav>
+{{ end }}
