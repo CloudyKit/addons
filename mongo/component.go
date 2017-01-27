@@ -24,8 +24,8 @@ package mongo
 
 import (
 	"github.com/CloudyKit/framework/app"
-	"github.com/CloudyKit/framework/assert"
 	"github.com/CloudyKit/framework/container"
+	"github.com/CloudyKit/framework/ensure"
 
 	"gopkg.in/mgo.v2"
 	"reflect"
@@ -100,7 +100,7 @@ func (pp *Component) Bootstrap(a *app.App) {
 	} else {
 		a.IoC.MapProviderFunc(SessionType, func(cdi *container.IoC) interface{} {
 			s, err := pp.session()
-			assert.NilErr(err)
+			ensure.NilErr(err)
 			cdi.MapProvider(SessionType, (*magicSession)(s))
 			return s
 		})
