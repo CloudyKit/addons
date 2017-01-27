@@ -1,3 +1,25 @@
+// MIT License
+//
+// Copyright (c) 2017 José Santos <henrique_1609@me.com>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 package startmin
 
 import (
@@ -13,7 +35,7 @@ import (
 
 type MenuItem struct {
 	Icon     string
-	Name     string
+	Key      string
 	Text     string
 	Href     string
 	Children []*MenuItem
@@ -23,21 +45,29 @@ func (m *MenuItem) Get(name, text, icon string) *MenuItem {
 
 	for i := 0; i < len(m.Children); i++ {
 		m := m.Children[i]
-		if m.Name == name {
+		if m.Key == name {
 			return m
 		}
 	}
 
-	me := &MenuItem{Name: name, Text: text, Icon: icon}
-	m.Children = append(m.Children, me)
-	return me
+	if text != "" {
+		me := &MenuItem{Key: name, Text: text, Icon: icon}
+		m.Children = append(m.Children, me)
+		return me
+	}
+
+	return nil
 }
 
-func (m *MenuItem) AddMenu(menu ...*MenuItem) {
-	m.AddMenuList(menu)
+func (m *MenuItem) GetByKey(key string) *MenuItem {
+	return m.Get(key, "", "")
 }
 
-func (m *MenuItem) AddMenuList(menu []*MenuItem) {
+func (m *MenuItem) AppendMenu(menu ...*MenuItem) {
+	m.AppendMenus(menu)
+}
+
+func (m *MenuItem) AppendMenus(menu []*MenuItem) {
 	m.Children = append(m.Children, menu...)
 }
 
@@ -55,7 +85,7 @@ func Component(publicPath string) app.ComponentFunc {
 			}
 		}
 
-		jetSet := view.GetJetSet(a.Global)
+		jetSet := view.GetJetSet(a.IoC)
 		jetSet.AddGlobal("startminPublicPath", a.Prefix+publicPath)
 		jetSet.AddGopathPath("github.com/CloudyKit/addons/startmin/templates")
 

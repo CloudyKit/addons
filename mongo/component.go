@@ -1,9 +1,31 @@
+// MIT License
+//
+// Copyright (c) 2017 José Santos <henrique_1609@me.com>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 package mongo
 
 import (
 	"github.com/CloudyKit/framework/app"
 	"github.com/CloudyKit/framework/assert"
-	"github.com/CloudyKit/framework/cdi"
+	"github.com/CloudyKit/framework/container"
 
 	"gopkg.in/mgo.v2"
 	"reflect"
@@ -13,16 +35,16 @@ var SessionType = reflect.TypeOf((*mgo.Session)(nil))
 var DatabaseType = reflect.TypeOf((*mgo.Database)(nil))
 var CollectionType = reflect.TypeOf((*mgo.Collection)(nil))
 
-func GetSession(cdi *cdi.Global) *mgo.Session {
-	return cdi.GetByType(SessionType).(*mgo.Session)
+func LoadSession(cdi *container.IoC) *mgo.Session {
+	return cdi.LoadType(SessionType).(*mgo.Session)
 }
 
-func GetDatabase(cdi *cdi.Global) *mgo.Database {
-	return cdi.GetByType(DatabaseType).(*mgo.Database)
+func LoadDatabase(cdi *container.IoC) *mgo.Database {
+	return cdi.LoadType(DatabaseType).(*mgo.Database)
 }
 
-func GetCollection(cdi *cdi.Global) *mgo.Collection {
-	return cdi.GetByType(CollectionType).(*mgo.Collection)
+func LoadCollection(cdi *container.IoC) *mgo.Collection {
+	return cdi.LoadType(CollectionType).(*mgo.Collection)
 }
 
 type Component struct {
@@ -34,11 +56,11 @@ type Component struct {
 
 type magicSession mgo.Session
 
-func (m *magicSession) Provide(di *cdi.Global) interface{} {
+func (m *magicSession) Provide(di *container.IoC) interface{} {
 	return (*mgo.Session)(m)
 }
 
-func (m *magicSession) Finalize() {
+func (m *magicSession) Dispose() {
 	(*mgo.Session)(m).Close()
 }
 
@@ -62,29 +84,30 @@ func (pp *Component) Bootstrap(a *app.App) {
 		}
 
 		if pp.Copy {
-			a.Global.MapType(SessionType, func(cdi *cdi.Global) interface{} {
+			a.IoC.MapProviderFunc(SessionType, func(cdi *container.IoC) interface{} {
 				s := pp.Session.Copy()
-				cdi.MapType(SessionType, (*magicSession)(s))
+				cdi.MapProvider(SessionType, (*magicSession)(s))
 				return s
 			})
 		} else {
-			a.Global.MapType(SessionType, func(cdi *cdi.Global) interface{} {
+			a.IoC.MapProviderFunc(SessionType, func(cdi *container.IoC) interface{} {
 				s := pp.Session.Clone()
-				cdi.MapType(SessionType, (*magicSession)(s))
+				cdi.MapProvider(SessionType, (*magicSession)(s))
 				return s
 			})
 		}
 
 	} else {
-		a.Global.MapType(SessionType, func(cdi *cdi.Global) interface{} {
+		a.IoC.MapProviderFunc(SessionType, func(cdi *container.IoC) interface{} {
 			s, err := pp.session()
 			assert.NilErr(err)
-			cdi.MapType(SessionType, (*magicSession)(s))
+			cdi.MapProvider(SessionType, (*magicSession)(s))
 			return s
 		})
 	}
 
-	a.Global.MapType(DatabaseType, func(cdi *cdi.Global) interface{} {
-		return GetSession(cdi).DB(pp.DB)
+	a.IoC.MapProviderFunc(DatabaseType, func(cdi *container.IoC) interface{} {
+		return LoadSession(cdi).DB(pp.DB)
 	})
+
 }
